@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One-Way ANOVA Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(to bottom, #f0f8ff, #e6e6fa);
+        }
+
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+        }
+
+        .group {
+            margin-bottom: 15px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 2px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .error {
+            color: red;
+            border: 1px solid red;
+            background-color: #ffe6e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+
+        .simulation {
+            background-color: #ffffff;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .simulation h2 {
+            margin-bottom: 20px;
+            color: #4CAF50;
+            text-align: center;
+        }
+
+        .simulation-step {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .simulation-step p {
+            margin: 0;
+        }
+
+        .simulation-step span {
+            font-weight: bold;
+            color: #333;
+        }
+
+        #theory {
+            background-color: #ffffff;
+            padding: 20px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        #theory h2 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        #theory ul {
+            margin-left: 20px;
+            list-style-type: disc;
+        }
+
+        #theory p, #theory li {
+            line-height: 1.6;
+        }
+
+
+        @media screen and (max-width: 600px) {
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.4/jstat.min.js"></script>
+</head>
+<body>
+    <h1>One-Way ANOVA Calculator</h1>
+    <button onclick="toggleTheory()">Show/Hide Theory</button>
+    <div id="theory-section" style="display: none;">
+
+        <div id="theory">
+            <h2>Understanding ANOVA</h2>
+            <p>
+                <strong>What is ANOVA?</strong><br>
+                ANOVA, or Analysis of Variance, is a statistical method used to check if the averages (means) of three or more groups are significantly different from each other. It tests whether differences in group averages are due to random chance or if they are real and meaningful.
+            </p>
+            <p>
+                <strong>What is One-Way ANOVA?</strong><br>
+                One-Way ANOVA is a simpler type of ANOVA. It looks at how a single factor (independent variable) affects a result (dependent variable). For instance, if you want to know whether students perform differently based on the teaching method used, One-Way ANOVA can help answer that.
+            </p>
+            <p>
+                <strong>When Do We Use ANOVA?</strong>
+                <ul>
+                    <li>To compare the effect of different treatments or conditions (e.g., medicine A, medicine B, and medicine C).</li>
+                    <li>To see if products perform differently under various settings (e.g., different temperatures).</li>
+                    <li>To analyze survey results divided into categories like age groups, gender, or geographic locations.</li>
+                </ul>
+            </p>
+            <p>
+                <strong>Main Ideas in ANOVA:</strong>
+                <ul>
+                    <li>
+                        <strong>Groups:</strong> These are the categories or conditions you're comparing. For example, different brands, teaching methods, or age groups.
+                    </li>
+                    <li>
+                        <strong>SSB (Sum of Squares Between):</strong> This measures how much the group averages differ from the overall average. It shows the variation caused by the groups themselves.
+                    </li>
+                    <li>
+                        <strong>SSW (Sum of Squares Within):</strong> This measures how much individuals in the same group differ from their group average. It shows the variation within the groups.
+                    </li>
+                    <li>
+                        <strong>F-statistic:</strong> This is a number that compares the variation between groups (SSB) to the variation within groups (SSW). A high F-statistic means groups are likely different.
+                    </li>
+                    <li>
+                        <strong>P-value:</strong> This tells us how likely it is that the group differences are just due to chance. A small P-value (e.g., less than 0.05) means the group differences are statistically significant.
+                    </li>
+                </ul>
+            </p>
+        </div>        
+    </div>
+    
+    <div id="anova-calculator">
+        <div id="groups-container">
+            <div class="group">
+                <label for="group1">Group 1 (comma-separated):</label><br>
+                <input type="text" id="group1" placeholder="e.g., 2,3,5">
+            </div>
+        </div>
+        <button onclick="addGroup()">Add Group</button>
+        <button onclick="removeGroup()">Remove Group</button>
+        <div>
+            <label for="alpha">Significance Level (&#945;):</label>
+            <input type="number" id="alpha" value="0.05" step="0.01" min="0.01" max="0.1">
+        </div>
+        <button onclick="calculateANOVA()">Calculate ANOVA</button>
+        <button onclick="saveData()">Save Data</button>
+        <button onclick="loadData()">Load Data</button>
+        <div class="error" id="error" style="display: none;"></div>
+        <table id="results-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Source of Variation</th>
+                    <th>SS</th>
+                    <th>df</th>
+                    <th>MS</th>
+                    <th>F</th>
+                    <th>P-value</th>
+                    <th>F crit</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="between-row"></tr>
+                <tr id="within-row"></tr>
+                <tr id="total-row"></tr>
+            </tbody>
+        </table>
+        <div id="simulation" class="simulation" style="display: none;">
+            <h2>Computation Simulation</h2>
+            <div id="simulation-steps">
+                <div class="simulation-step">
+                    <p><span>Step 1:</span> Parsing input data into groups.</p>
+                </div>
+                <div class="simulation-step">
+                    <p><span>Step 2:</span> Calculating group means and variances.</p>
+                </div>
+                <div class="simulation-step">
+                    <p><span>Step 3:</span> Determining total, between-group, and within-group sum of squares (SS).</p>
+                </div>
+                <div class="simulation-step">
+                    <p><span>Step 4:</span> Computing degrees of freedom (df) and mean squares (MS).</p>
+                </div>
+                <div class="simulation-step">
+                    <p><span>Step 5:</span> Calculating F-statistic and comparing with critical value (F crit).</p>
+                </div>
+                <div class="simulation-step">
+                    <p><span>Step 6:</span> Evaluating the p-value and determining the significance of the result.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let groupCount = 1;
+
+        function addGroup() {
+            groupCount++;
+            const container = document.getElementById('groups-container');
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'group';
+            groupDiv.innerHTML = `
+                <label for="group${groupCount}">Group ${groupCount} (comma-separated):</label><br>
+                <input type="text" id="group${groupCount}" placeholder="e.g., 2,3,5">
+            `;
+            container.appendChild(groupDiv);
+        }
+
+        function removeGroup() {
+            if (groupCount > 1) {
+                const container = document.getElementById('groups-container');
+                container.removeChild(container.lastChild);
+                groupCount--;
+            }
+        }
+
+        function calculateANOVA() {
+            const alpha = parseFloat(document.getElementById('alpha').value);
+            if (isNaN(alpha) || alpha <= 0 || alpha > 1) {
+                displayError("Invalid significance level. Please enter a value between 0 and 1.");
+                return;
+            }
+
+            const groups = [];
+            for (let i = 1; i <= groupCount; i++) {
+                const groupInput = document.getElementById(`group${i}`).value.trim();
+                const groupValues = groupInput.split(',').map(Number).filter(n => !isNaN(n));
+                if (groupValues.length > 0) {
+                    groups.push(groupValues);
+                } else {
+                    displayError(`Group ${i} contains invalid or empty data.`);
+                    return;
+                }
+            }
+
+            if (groups.length < 2) {
+                displayError("Please provide at least two groups with valid data.");
+                return;
+            }
+
+            const flatData = groups.flat();
+            const groupMeans = groups.map(group => jStat.mean(group));
+            const overallMean = jStat.mean(flatData);
+
+            const SSB = groups.reduce((sum, group, i) => sum + group.length * Math.pow(groupMeans[i] - overallMean, 2), 0);
+            const SSW = groups.reduce(
+                (sum, group, i) => sum + group.reduce((subSum, val) => subSum + Math.pow(val - groupMeans[i], 2), 0),
+                0
+            );
+
+            const dfBetween = groups.length - 1;
+            const dfWithin = flatData.length - groups.length;
+
+            const MSB = SSB / dfBetween;
+            const MSW = SSW / dfWithin;
+            const F = MSB / MSW;
+
+            const pValue = 1 - jStat.centralF.cdf(F, dfBetween, dfWithin);
+            const Fcrit = jStat.centralF.inv(1 - alpha, dfBetween, dfWithin);
+            const result = F > Fcrit ? "Significant" : "Not Significant";
+
+            displayResults(SSB, dfBetween, MSB, F, pValue, Fcrit, SSW, dfWithin, result, SSB + SSW, dfBetween + dfWithin);
+            simulateComputation(groups, groupMeans, overallMean, SSB, SSW, dfBetween, dfWithin, MSB, MSW, F, pValue, Fcrit, result);
+        }
+
+        function displayError(message) {
+            document.getElementById('error').innerText = message;
+            document.getElementById('results-table').style.display = "none";
+            document.getElementById('simulation').style.display = "none";
+        }
+
+        function displayResults(SSB, dfBetween, MSB, F, pValue, Fcrit, SSW, dfWithin, result, SST, dfTotal) {
+            document.getElementById('error').innerText = "";
+            document.getElementById('results-table').style.display = "table";
+
+            const formatPValue = pValue < 0.0001 ? "<0.0001" : pValue.toFixed(4);
+
+            document.getElementById('between-row').innerHTML = `
+                <td>Between Groups</td>
+                <td>${SSB.toFixed(3)}</td>
+                <td>${dfBetween}</td>
+                <td>${MSB.toFixed(3)}</td>
+                <td>${F.toFixed(3)}</td>
+                <td>${formatPValue}</td>
+                <td>${Fcrit.toFixed(3)}</td>
+                <td>${result}</td>
+            `;
+            document.getElementById('within-row').innerHTML = `
+                <td>Within Groups</td>
+                <td>${SSW.toFixed(3)}</td>
+                <td>${dfWithin}</td>
+                <td>${(SSW / dfWithin).toFixed(3)}</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+            `;
+            document.getElementById('total-row').innerHTML = `
+                <td>Total</td>
+                <td>${SST.toFixed(3)}</td>
+                <td>${dfTotal}</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+            `;
+        }
+
+        function simulateComputation(groups, groupMeans, overallMean, SSB, SSW, dfBetween, dfWithin, MSB, MSW, F, pValue, Fcrit, result) {
+            const simulationContainer = document.getElementById('simulation-steps');
+            simulationContainer.innerHTML = "";
+            const steps = [
+                `Step 1: Calculate the overall mean:
+                Given: All group values: [${groups.flat().join(', ')}]
+                Formula: Overall Mean = Σ(all values) / Total Count
+                Computation: (${groups.flat().join(' + ')}) / ${groups.flat().length} = ${overallMean.toFixed(3)}`,
+
+                `Step 2: Calculate group means:
+                ${groups.map((group, i) => `Group ${i + 1}: [${group.join(', ')}], Mean = (${group.join(' + ')}) / ${group.length} = ${groupMeans[i].toFixed(3)}`).join('\n')}`,
+
+                `Step 3: Compute SSB (Sum of Squares Between Groups):
+                Formula: SSB = Σ(Group Size × (Group Mean - Overall Mean)²)
+                Computation: ${groups.map((group, i) => `${group.length} × (${groupMeans[i].toFixed(3)} - ${overallMean.toFixed(3)})²`).join(' + ')} = ${SSB.toFixed(3)}`,
+
+                `Step 4: Compute SSW (Sum of Squares Within Groups):
+                Formula: SSW = ΣΣ(Each Value - Group Mean)²
+                Computation: ${groups.map((group, i) => `${group.map(val => `(${val} - ${groupMeans[i].toFixed(3)})²`).join(' + ')}`).join(' + ')} = ${SSW.toFixed(3)}`,
+
+                `Step 5: Compute degrees of freedom:
+                Between Groups df = k - 1 = ${dfBetween}
+                Within Groups df = N - k = ${dfWithin}`,
+
+                `Step 6: Calculate MSB (Mean Square Between Groups):
+                Formula: MSB = SSB / dfBetween
+                Computation: ${SSB.toFixed(3)} / ${dfBetween} = ${MSB.toFixed(3)}`,
+
+                `Step 7: Calculate MSW (Mean Square Within Groups):
+                Formula: MSW = SSW / dfWithin
+                Computation: ${SSW.toFixed(3)} / ${dfWithin} = ${MSW.toFixed(3)}`,
+
+                `Step 8: Compute F-statistic:
+                Formula: F = MSB / MSW
+                Computation: ${MSB.toFixed(3)} / ${MSW.toFixed(3)} = ${F.toFixed(3)}`,
+
+                `Step 9: Compute p-value:
+                Computation: p-value = 1 - CDF(F, dfBetween, dfWithin)
+                p-value = ${pValue < 0.0001 ? '<0.0001' : pValue.toFixed(4)}`,
+
+                `Step 10: Compare F with F critical:
+                Given F = ${F.toFixed(3)}, F critical = ${Fcrit.toFixed(3)}
+                Result: ${result}`
+            ];
+
+            steps.forEach((step, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'simulation-step';
+                stepDiv.innerText = `(${index + 1}) ${step}`;
+                simulationContainer.appendChild(stepDiv);
+            });
+
+            document.getElementById('simulation').style.display = "block";
+        }
+
+        function saveData() {
+            const data = [];
+            for (let i = 1; i <= groupCount; i++) {
+                const groupInput = document.getElementById(`group${i}`).value.trim();
+                data.push(groupInput);
+            }
+            localStorage.setItem('anovaData', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const data = JSON.parse(localStorage.getItem('anovaData'));
+            if (data) {
+                const container = document.getElementById('groups-container');
+                container.innerHTML = '';
+                groupCount = 0;
+                data.forEach((group, index) => {
+                    groupCount++;
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'group';
+                    groupDiv.innerHTML = `
+                        <label for="group${index + 1}">Group ${index + 1} (comma-separated):</label><br>
+                        <input type="text" id="group${index + 1}" placeholder="e.g., 2,3,5" value="${group}">
+                    `;
+                    container.appendChild(groupDiv);
+                });
+            } else {
+                displayError("No saved data found.");
+            }
+        }
+
+        function toggleTheory() {
+            const section = document.getElementById('theory-section');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>
